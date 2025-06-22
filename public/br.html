@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battle Royale Minecraft - LaTeamCocasse</title>
+  <link rel="icon" href="assets/site-icon.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+
+<body class="br-bg">
+  <header class="main-header">
+    <div class="header-content">
+      <div class="header-title">
+        <img src="assets/site-icon.png" alt="Icon du site" id="header-logo">
+        <h1>Battle Royale Minecraft</h1>
+      </div>
+      <button class="header-btn" onclick="window.location.href='index.html'">
+        <i data-lucide="arrow-left" class="btn-icon"></i>
+        Retour au site
+      </button>
+    </div>
+  </header>
+
+  <main class="br-container">
+    <div class="br-grid">
+      <div class="br-main-sections">
+        <section class="br-section">
+          <h2><i data-lucide="users"></i> Joueurs connectés</h2>
+          <ul id="players-list">
+            <!-- À remplir dynamiquement via /api/players -->
+            <li>Chargement...</li>
+          </ul>
+        </section>
+
+        <section class="br-section">
+          <h2><i data-lucide="activity"></i> Statut des parties</h2>
+          <div id="game-status">
+            <!-- À remplir dynamiquement via /api/status -->
+            <p>Chargement...</p>
+          </div>
+        </section>
+
+        <section class="br-section">
+          <h2><i data-lucide="trophy"></i> Classement</h2>
+          <ol id="leaderboard">
+            <!-- À remplir dynamiquement via /api/leaderboard -->
+            <li>Chargement...</li>
+          </ol>
+        </section>
+
+        <section class="br-section">
+          <h2><i data-lucide="clock"></i> Historique des parties</h2>
+          <ul id="history-list">
+            <!-- À remplir dynamiquement via /api/history -->
+            <li>Chargement...</li>
+          </ul>
+        </section>
+
+        <section class="br-section">
+          <h2><i data-lucide="server"></i> Infos serveur</h2>
+          <div id="server-info">
+            <!-- À remplir dynamiquement via /api/server -->
+            <p>Chargement...</p>
+          </div>
+        </section>
+      </div>
+      <div class="br-map-section">
+        <section class="br-section">
+          <h2><i data-lucide="map"></i> Carte Dynmap</h2>
+          <div class="dynmap-container">
+            <!-- Remplace l'URL par celle de ta dynmap -->
+            <iframe src="http://91.197.6.112:30603/" width="100%" height="400" frameborder="0"></iframe>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 LaTeamCocasse - Battle Royale Minecraft</p>
+  </footer>
+
+  <script>
+    // Exemple de récupération des joueurs connectés
+    async function fetchPlayers() {
+      const res = await fetch('/api/players');
+      const data = await res.json();
+      const list = document.getElementById('players-list');
+      list.innerHTML = '';
+      data.players.forEach(player => {
+        const li = document.createElement('li');
+        li.textContent = player.name;
+        list.appendChild(li);
+      });
+    }
+    // À dupliquer pour les autres sections (status, leaderboard, etc.)
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      fetchPlayers();
+      // fetchStatus(), fetchLeaderboard(), etc.
+    });
+  </script>
+</body>
+
+</html>
