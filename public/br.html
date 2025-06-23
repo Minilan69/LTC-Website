@@ -12,27 +12,6 @@
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    .map-container,
-    #map {
-      width: 100%;
-      height: 50vh;
-      min-height: 300px;
-      margin: 0;
-      padding: 0;
-    }
-
-    .leaflet-control-attribution {
-      display: none !important;
-    }
-  </style>
 </head>
 
 <body class="br-bg">
@@ -95,11 +74,9 @@
         <section class="br-section">
           <h2><i data-lucide="map"></i> Carte</h2>
           <div class="map-container">
-            <div id="map"></div>
+            <div id="map" style="height: 100%;"></div>
           </div>
-        </section>
-        <section class="btn-section">
-          <button class="header-btn" id="update-map-btn" class="btn-icon">🔄 Mettre à jour la carte</button>
+          <button class="btn" id="update-map-btn" class="btn-icon">🔄 Mettre à jour la carte</button>
           <p id="map-status"></p>
         </section>
       </div>
@@ -121,8 +98,8 @@
 
     const map = L.map("map", {
       crs: L.CRS.Simple,
-      minZoom: -4,
-      maxZoom: 4,
+      minZoom: -3,
+      maxZoom: 0,
       zoom: 0,
       center: [0, 0],
       maxBounds: bounds,
@@ -161,6 +138,23 @@
         status.textContent = "❌ Échec de la requête";
         console.error(err);
       }
+    });
+
+    function updateMinZoom() {
+      const minZoom = map.getBoundsZoom(bounds, false);
+      map.setMinZoom(minZoom);
+      if (map.getZoom() < minZoom) {
+        map.setZoom(minZoom);
+      }
+    }
+
+    // Initialisation
+    updateMinZoom();
+
+    // Met à jour dynamiquement lors du redimensionnement de la fenêtre
+    window.addEventListener('resize', () => {
+      updateMinZoom();
+      map.fitBounds(bounds); // Optionnel : recentre si besoin
     });
   </script>
   <script>
