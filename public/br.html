@@ -160,7 +160,7 @@
   <script>
     // Exemple récupération joueurs (à adapter)
     async function fetchPlayers() {
-      const res = await fetch("/api/players");
+      const res = await fetch("http://91.197.6.112:30604/api/players");
       const data = await res.json();
       const list = document.getElementById("players-list");
       list.innerHTML = "";
