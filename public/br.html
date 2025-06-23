@@ -2,24 +2,48 @@
 <html lang="fr">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Battle Royale Minecraft - LaTeamCocasse</title>
-  <link rel="icon" href="assets/site-icon.png" type="image/png">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/site-icon.png" type="image/png" />
+  <link rel="stylesheet" href="styles.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .map-container,
+    #map {
+      width: 100%;
+      height: 50vh;
+      min-height: 300px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .leaflet-control-attribution {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body class="br-bg">
   <header class="main-header">
     <div class="header-content">
       <div class="header-title">
-        <img src="assets/site-icon.png" alt="Icon du site" id="header-logo">
+        <img src="assets/site-icon.png" alt="Icon du site" id="header-logo" />
         <h1>Battle Royale Minecraft</h1>
       </div>
       <button class="header-btn" onclick="window.location.href='index.html'">
-        <i data-lucide="arrow-left" class="btn-icon"></i>
-        Retour au site
+        <i data-lucide="arrow-left" class="btn-icon"></i>Retour au site
       </button>
     </div>
   </header>
@@ -69,11 +93,14 @@
       </div>
       <div class="br-map-section">
         <section class="br-section">
-          <h2><i data-lucide="map"></i> Carte Dynmap</h2>
-          <div class="dynmap-container">
-            <!-- Remplace l'URL par celle de ta dynmap -->
-            <iframe src="http://91.197.6.112:30603/" width="100%" height="400" frameborder="0"></iframe>
+          <h2><i data-lucide="map"></i> Carte</h2>
+          <div class="map-container">
+            <div id="map"></div>
           </div>
+        </section>
+        <section class="btn-section">
+          <button class="header-btn" id="update-map-btn" class="btn-icon">🔄 Mettre à jour la carte</button>
+          <p id="map-status"></p>
         </section>
       </div>
     </div>
@@ -83,25 +110,77 @@
     <p>© 2025 LaTeamCocasse - Battle Royale Minecraft</p>
   </footer>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Exemple de récupération des joueurs connectés
+    const imageWidth = 8192; // Largeur de ton image en pixels
+    const imageHeight = 8192; // Hauteur de ton image en pixels
+    const bounds = [
+      [0, 0],
+      [imageHeight, imageWidth],
+    ]; // format [y, x]
+
+    const map = L.map("map", {
+      crs: L.CRS.Simple,
+      minZoom: -4,
+      maxZoom: 4,
+      zoom: 0,
+      center: [0, 0],
+      maxBounds: bounds,
+      maxBoundsViscosity: 1.0,
+      zoomControl: false // <-- Ajoute cette ligne pour enlever les boutons de zoom
+    });
+
+    // Stocke ton overlay ici
+    let currentOverlay = L.imageOverlay("assets/map/map.png", bounds).addTo(map);
+
+    map.fitBounds(bounds);
+
+    // Fonction pour créer un nouvel overlay avec horodatage anti-cache
+    function addLatestMapOverlay() {
+      const url = "assets/map/map.png?t=" + Date.now();
+      return L.imageOverlay(url, bounds).addTo(map);
+    }
+
+    // Gestion du clic pour mettre à jour la carte
+    document.getElementById("update-map-btn").addEventListener("click", async () => {
+      const status = document.getElementById("map-status");
+      status.textContent = "Mise à jour en cours...";
+
+      try {
+        const res = await fetch("/update-map", { method: "POST" });
+        const data = await res.json();
+
+        if (data.success) {
+          status.textContent = "✅ Carte mise à jour";
+          map.removeLayer(currentOverlay);
+          currentOverlay = addLatestMapOverlay();
+        } else {
+          status.textContent = "❌ Erreur : " + data.error;
+        }
+      } catch (err) {
+        status.textContent = "❌ Échec de la requête";
+        console.error(err);
+      }
+    });
+  </script>
+  <script>
+    // Exemple récupération joueurs (à adapter)
     async function fetchPlayers() {
-      const res = await fetch('/api/players');
+      const res = await fetch("/api/players");
       const data = await res.json();
-      const list = document.getElementById('players-list');
-      list.innerHTML = '';
-      data.players.forEach(player => {
-        const li = document.createElement('li');
+      const list = document.getElementById("players-list");
+      list.innerHTML = "";
+      data.players.forEach((player) => {
+        const li = document.createElement("li");
         li.textContent = player.name;
         list.appendChild(li);
       });
     }
-    // À dupliquer pour les autres sections (status, leaderboard, etc.)
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
       fetchPlayers();
-      // fetchStatus(), fetchLeaderboard(), etc.
+      // autres fetch ici
     });
   </script>
 </body>

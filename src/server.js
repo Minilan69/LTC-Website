@@ -6,6 +6,7 @@ const session = require('express-session')
 const SQLiteStore = require('connect-sqlite3')(session)
 const app = express()
 const db = require('./database')
+const { exec } = require('child_process');
 
 // Get Discord OAuth info from env vars
 const CLIENT_ID = process.env.CLIENT_ID
@@ -186,6 +187,20 @@ app.post('/find-user', isAuthenticated, (req, res) => {
         }
     );
 });
+
+// Update Map
+app.post('/update-map', (req, res) => {
+  exec('python3 map_updater.py', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Erreur d’exécution : ${error.message}`)
+      return res.status(500).json({ success: false, error: error.message })
+    }
+    if (stderr) console.error(`stderr : ${stderr}`)
+
+    console.log(`stdout : ${stdout}`)
+    res.json({ success: true, message: 'Carte mise à jour' })
+  })
+})
 
 
 app.listen(PORT, () => {
