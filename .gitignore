@@ -137,3 +137,6 @@ dist
 
 # database file
 src/db/*
+
+# map
+public/assets/map/*
