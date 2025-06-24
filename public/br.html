@@ -158,22 +158,75 @@
     });
   </script>
   <script>
+    // UUID pour les icônes
+    async function getUUIDFromName(name) {
+      const res = await fetch(`/api/mojang-uuid/${name}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.id;
+    }
     // Rrécupération joueurs
+    let currentPlayers = new Map();
+
     async function fetchPlayers() {
       const res = await fetch('/api-proxy/api/players');
       const data = await res.json();
       const list = document.getElementById("players-list");
-      list.innerHTML = "";
+
+      // Nettoie les messages spéciaux
+      Array.from(list.children).forEach(child => {
+        if (
+          child.textContent === "Chargement..." ||
+          child.textContent === "Aucun joueur connecté"
+        ) {
+          list.removeChild(child);
+        }
+      });
+
+      // Si aucun joueur connecté
       if (!data.players || data.players.length === 0) {
-        const li = document.createElement("li");
-        li.textContent = "Aucun joueur connecté";
-        list.appendChild(li);
-      } else {
-        data.players.forEach((player) => {
+        if (!Array.from(list.children).some(child => child.textContent === "Aucun joueur connecté")) {
           const li = document.createElement("li");
-          li.textContent = player.name;
+          li.textContent = "Aucun joueur connecté";
+          // Supprime tout le contenu de list
+          while (list.firstChild) {
+            list.removeChild(list.firstChild);
+          }
           list.appendChild(li);
-        });
+        }
+        return;
+      }
+
+      // Récupère la liste des pseudos actuellement affichés
+      const displayedNames = Array.from(list.children).map(li =>
+        li.dataset && li.dataset.playerName ? li.dataset.playerName : null
+      ).filter(Boolean);
+
+      // Supprime les joueurs qui ne sont plus connectés
+      for (const li of Array.from(list.children)) {
+        const name = li.dataset && li.dataset.playerName;
+        if (name && !data.players.some(p => p.name === name)) {
+          list.removeChild(li);
+        }
+      }
+
+      // Ajoute les nouveaux joueurs
+      for (const player of data.players) {
+        if (!Array.from(list.children).some(li => li.dataset && li.dataset.playerName === player.name)) {
+          const li = document.createElement("li");
+          li.dataset.playerName = player.name;
+          const img = document.createElement("img");
+          const uuid = await getUUIDFromName(player.name);
+          img.src = `https://crafatar.com/avatars/${uuid}?size=32&overlay`;
+          img.alt = `Avatar de ${player.name}`;
+          img.style.verticalAlign = "middle";
+          img.style.marginRight = "8px";
+          img.width = 24;
+          img.height = 24;
+          li.appendChild(img);
+          li.appendChild(document.createTextNode(player.name));
+          list.appendChild(li);
+        }
       }
     }
 

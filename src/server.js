@@ -214,6 +214,18 @@ app.use('/api-proxy', async (req, res) => {
   }
 })
 
+app.get('/api/mojang-uuid/:name', async (req, res) => {
+  const { name } = req.params;
+  try {
+    const response = await fetch(`https://api.mojang.com/users/profiles/minecraft/${name}`);
+    if (!response.ok) return res.status(404).json({ error: 'Not found' });
+    const data = await response.json();
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 
 
 app.listen(PORT, () => {
