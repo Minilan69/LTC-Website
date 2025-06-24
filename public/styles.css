@@ -606,6 +606,8 @@ footer a:hover {
   font-weight: 600;
   font-size: 1.07rem;
   box-shadow: 0 2px 8px rgba(236,72,153,0.08);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #leaderboard {
@@ -628,13 +630,12 @@ footer a:hover {
 }
 
 #game-status, #server-info {
-  font-size: 1.1rem;
-  color: #fff;
-  font-weight: 600;
-  background: rgba(255,255,255,0.10);
-  border-radius: 8px;
-  padding: 0.7rem 1.2rem;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+  list-style: decimal inside;
+  padding-left: 0.5rem;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 }
 
 .dynmap-container {
@@ -824,4 +825,45 @@ footer a:hover {
 .br-bg {
   background: linear-gradient(120deg, rgba(37,99,235,0.7) 0%, rgba(236,72,153,0.6) 100%),
     url('assets/br.gif') center/cover no-repeat fixed !important;
+}
+
+/* Ajoute ceci à la fin de styles.css */
+
+/* Uniformise le style des enfants des listes et panels */
+#players-list li,
+#leaderboard li,
+#history-list li,
+#game-status > *,
+#server-info > * {
+  background: rgba(255,255,255,0.10);
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+  margin-bottom: 0.5rem;
+  border: none;
+  /* Optionnel : pour éviter les doubles marges sur la dernière ligne */
+  margin-right: 0.5rem;
+}
+
+#players-list li:last-child,
+#leaderboard li:last-child,
+#history-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Pour que chaque li prenne toute la largeur */
+#players-list,
+#history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+#players-list li,
+#history-list li {
+  width: 100%;
+  box-sizing: border-box;
 }

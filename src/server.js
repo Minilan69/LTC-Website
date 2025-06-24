@@ -202,6 +202,19 @@ app.post('/update-map', (req, res) => {
   })
 })
 
+// Proxy route to fetch data from the external API
+app.use('/api-proxy', async (req, res) => {
+  const url = 'http://91.197.6.112:30604' + req.url
+  try {
+    const response = await fetch(url)
+    const data = await response.text()
+    res.send(data)
+  } catch (err) {
+    res.status(500).send('Erreur proxy')
+  }
+})
+
+
 
 app.listen(PORT, () => {
   console.log('Server running on port ' + PORT)

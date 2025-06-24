@@ -33,7 +33,7 @@
         <section class="br-section">
           <h2><i data-lucide="users"></i> Joueurs connectés</h2>
           <ul id="players-list">
-            <!-- À remplir dynamiquement via /api/players -->
+            <!-- Remplir dynamiquement via /api/players -->
             <li>Chargement...</li>
           </ul>
         </section>
@@ -154,27 +154,36 @@
     // Met à jour dynamiquement lors du redimensionnement de la fenêtre
     window.addEventListener('resize', () => {
       updateMinZoom();
-      map.fitBounds(bounds); // Optionnel : recentre si besoin
+      map.fitBounds(bounds);
     });
   </script>
   <script>
-    // Exemple récupération joueurs (à adapter)
+    // Rrécupération joueurs
     async function fetchPlayers() {
-      const res = await fetch("http://91.197.6.112:30604/api/players");
+      const res = await fetch('/api-proxy/api/players');
       const data = await res.json();
       const list = document.getElementById("players-list");
       list.innerHTML = "";
-      data.players.forEach((player) => {
+      if (!data.players || data.players.length === 0) {
         const li = document.createElement("li");
-        li.textContent = player.name;
+        li.textContent = "Aucun joueur connecté";
         list.appendChild(li);
-      });
+      } else {
+        data.players.forEach((player) => {
+          const li = document.createElement("li");
+          li.textContent = player.name;
+          list.appendChild(li);
+        });
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
       fetchPlayers();
       // autres fetch ici
+
+      // Rafraîchit la liste toutes les 10 secondes
+      setInterval(fetchPlayers, 10000);
     });
   </script>
 </body>
