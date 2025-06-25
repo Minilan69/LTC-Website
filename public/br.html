@@ -169,7 +169,7 @@
     let currentPlayers = new Map();
 
     async function fetchPlayers() {
-      const res = await fetch('/api-proxy/api/br/players');
+      const res = await fetch('/api-proxy/api/players');
       const data = await res.json();
       const list = document.getElementById("players-list");
 
