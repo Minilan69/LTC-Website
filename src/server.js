@@ -7,16 +7,18 @@ const SQLiteStore = require('connect-sqlite3')(session)
 const app = express()
 const db = require('./database')
 const { exec } = require('child_process');
+const { Client, GatewayIntentBits } = require('discord.js')
 
 // Get Discord OAuth info from env vars
 const CLIENT_ID = process.env.CLIENT_ID
 const CLIENT_SECRET = process.env.CLIENT_SECRET
+const BOT_TOKEN = process.env.BOT_TOKEN 
 const REDIRECT_URI = process.env.REDIRECT_URI
 const PORT = process.env.PORT
 
 // Check if env vars exist
-if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI || !PORT) {
-  console.error('Missing environment variables: CLIENT_ID, CLIENT_SECRET, or REDIRECT_URI')
+if (!CLIENT_ID || !CLIENT_SECRET || !BOT_TOKEN || !REDIRECT_URI || !PORT) {
+  console.error('Missing environment variables: CLIENT_ID, CLIENT_SECRET, BOT_TOKEN, REDIRECT_URI or PORT')
   process.exit(1)
 }
 
@@ -189,7 +191,7 @@ app.post('/find-user', isAuthenticated, (req, res) => {
 });
 
 // Update Map
-app.post('/update-map', (req, res) => {
+app.post('api/update-map', (req, res) => {
   exec('python3 map_updater.py', (error, stdout, stderr) => {
     if (error) {
       console.error(`Erreur d’exécution : ${error.message}`)
@@ -203,7 +205,7 @@ app.post('/update-map', (req, res) => {
 })
 
 // Proxy route to fetch data from the external API
-app.use('/api-proxy', async (req, res) => {
+app.use('/api/proxy', async (req, res) => {
   const url = 'http://91.197.6.112:30604' + req.url
   try {
     const response = await fetch(url)
@@ -214,6 +216,7 @@ app.use('/api-proxy', async (req, res) => {
   }
 })
 
+// Route to get the head of user
 app.get('/api/mojang-uuid/:name', async (req, res) => {
   const { name } = req.params;
   try {
@@ -226,6 +229,31 @@ app.get('/api/mojang-uuid/:name', async (req, res) => {
   }
 });
 
+// Discord News
+const discordClient = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
+})
+discordClient.login(BOT_TOKEN)
+discordClient.once('ready', () => {
+  console.log(`Bot Discord connecté en tant que ${discordClient.user.tag}`)
+})
+
+app.get('/api/last-message', async (req, res) => {
+  try {
+    const channel = await discordClient.channels.fetch('1387487557322936370')
+    const messages = await channel.messages.fetch({ limit: 1 })
+    const last = messages.first() 
+
+    res.json(last ? last.content: 'Pas de news')
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Erreur lors de la récupération du message' })
+  }
+})
 
 
 app.listen(PORT, () => {

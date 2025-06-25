@@ -12,6 +12,7 @@
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body class="br-bg">
@@ -41,7 +42,7 @@
         <section class="br-section">
           <h2><i data-lucide="activity"></i> Statut des parties</h2>
           <div id="game-status">
-            <!-- À remplir dynamiquement via /api/status -->
+            <!-- À remplir dynamiquement via /api/br/status -->
             <p>Chargement...</p>
           </div>
         </section>
@@ -49,7 +50,7 @@
         <section class="br-section">
           <h2><i data-lucide="trophy"></i> Classement</h2>
           <ol id="leaderboard">
-            <!-- À remplir dynamiquement via /api/leaderboard -->
+            <!-- À remplir dynamiquement via /api/br/leaderboard -->
             <li>Chargement...</li>
           </ol>
         </section>
@@ -57,7 +58,7 @@
         <section class="br-section">
           <h2><i data-lucide="clock"></i> Historique des parties</h2>
           <ul id="history-list">
-            <!-- À remplir dynamiquement via /api/history -->
+            <!-- À remplir dynamiquement via /api/br/history -->
             <li>Chargement...</li>
           </ul>
         </section>
@@ -65,7 +66,7 @@
         <section class="br-section">
           <h2><i data-lucide="server"></i> Infos serveur</h2>
           <div id="server-info">
-            <!-- À remplir dynamiquement via /api/server -->
+            <!-- À remplir dynamiquement via /api/br/server -->
             <p>Chargement...</p>
           </div>
         </section>
@@ -76,8 +77,6 @@
           <div class="map-container">
             <div id="map" style="height: 100%;"></div>
           </div>
-          <button class="btn" id="update-map-btn" class="btn-icon">🔄 Mettre à jour la carte</button>
-          <p id="map-status"></p>
         </section>
       </div>
     </div>
@@ -119,12 +118,12 @@
     }
 
     // Gestion du clic pour mettre à jour la carte
-    document.getElementById("update-map-btn").addEventListener("click", async () => {
+    async function updateMap() {
       const status = document.getElementById("map-status");
       status.textContent = "Mise à jour en cours...";
 
       try {
-        const res = await fetch("/update-map", { method: "POST" });
+        const res = await fetch("/api/update-map", { method: "POST" });
         const data = await res.json();
 
         if (data.success) {
@@ -138,6 +137,14 @@
         status.textContent = "❌ Échec de la requête";
         console.error(err);
       }
+    }
+
+    document.getElementById("update-map-btn").addEventListener("click", updateMap);
+
+    // Appelle la mise à jour de la carte au chargement de la page
+    document.addEventListener("DOMContentLoaded", () => {
+      updateMap();
+      lucide.createIcons();
     });
 
     function updateMinZoom() {
@@ -157,88 +164,7 @@
       map.fitBounds(bounds);
     });
   </script>
-  <script>
-    // UUID pour les icônes
-    async function getUUIDFromName(name) {
-      const res = await fetch(`/api/mojang-uuid/${name}`);
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.id;
-    }
-    // Rrécupération joueurs
-    let currentPlayers = new Map();
-
-    async function fetchPlayers() {
-      const res = await fetch('/api-proxy/api/players');
-      const data = await res.json();
-      const list = document.getElementById("players-list");
-
-      // Nettoie les messages spéciaux
-      Array.from(list.children).forEach(child => {
-        if (
-          child.textContent === "Chargement..." ||
-          child.textContent === "Aucun joueur connecté"
-        ) {
-          list.removeChild(child);
-        }
-      });
-
-      // Si aucun joueur connecté
-      if (!data.players || data.players.length === 0) {
-        if (!Array.from(list.children).some(child => child.textContent === "Aucun joueur connecté")) {
-          const li = document.createElement("li");
-          li.textContent = "Aucun joueur connecté";
-          // Supprime tout le contenu de list
-          while (list.firstChild) {
-            list.removeChild(list.firstChild);
-          }
-          list.appendChild(li);
-        }
-        return;
-      }
-
-      // Récupère la liste des pseudos actuellement affichés
-      const displayedNames = Array.from(list.children).map(li =>
-        li.dataset && li.dataset.playerName ? li.dataset.playerName : null
-      ).filter(Boolean);
-
-      // Supprime les joueurs qui ne sont plus connectés
-      for (const li of Array.from(list.children)) {
-        const name = li.dataset && li.dataset.playerName;
-        if (name && !data.players.some(p => p.name === name)) {
-          list.removeChild(li);
-        }
-      }
-
-      // Ajoute les nouveaux joueurs
-      for (const player of data.players) {
-        if (!Array.from(list.children).some(li => li.dataset && li.dataset.playerName === player.name)) {
-          const li = document.createElement("li");
-          li.dataset.playerName = player.name;
-          const img = document.createElement("img");
-          const uuid = await getUUIDFromName(player.name);
-          img.src = `https://crafatar.com/avatars/${uuid}?size=32&overlay`;
-          img.alt = `Avatar de ${player.name}`;
-          img.style.verticalAlign = "middle";
-          img.style.marginRight = "8px";
-          img.width = 24;
-          img.height = 24;
-          li.appendChild(img);
-          li.appendChild(document.createTextNode(player.name));
-          list.appendChild(li);
-        }
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons();
-      fetchPlayers();
-      // autres fetch ici
-
-      // Rafraîchit la liste toutes les 10 secondes
-      setInterval(fetchPlayers, 10000);
-    });
-  </script>
+  <script src="data.js"></script>
 </body>
 
 </html>
