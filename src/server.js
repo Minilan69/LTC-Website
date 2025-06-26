@@ -300,6 +300,7 @@ app.get('/api/last-message', async (req, res) => {
     if (!data.content) {
       data.content = ""
     }
+    console.log(data)
     res.json(data)
   } catch (err) {
     console.error(err)
