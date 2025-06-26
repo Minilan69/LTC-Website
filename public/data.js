@@ -164,6 +164,7 @@ async function fetchNews() {
     .replace(/\|\|(.+?)\|\|/g, '<span class="spoiler">$1</span>') // Spoiler
     .replace(/<@!?(\d+)>/g, '@utilisateur') // Mentions (remplace par texte)
     .replace(/<a?:\w+:\d+>/g, '') // Emojis custom Discord
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') // Gras Discord
     .replace(/^-# (.*)$/gm, '<span class="little">$1</span>'); // Petit texte gris
 
   const newsDiv = document.getElementById("server-info");
@@ -178,7 +179,6 @@ async function fetchNews() {
 
 // Initialisation globale
 document.addEventListener("DOMContentLoaded", () => {
-  lucide.createIcons();
   fetchPlayers();
   fetchLeaderboard();
   fetchGameStatus();

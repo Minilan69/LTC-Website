@@ -18,13 +18,21 @@
 <body class="br-bg">
   <header class="main-header">
     <div class="header-content">
-      <div class="header-title">
-        <img src="assets/site-icon.png" alt="Icon du site" id="header-logo" />
-        <h1>Battle Royale Minecraft</h1>
+      <div class="header-left">
+        <div class="header-title">
+          <img src="assets/site-icon.png" alt="Icon du site" id="header-logo">
+          <h1>Battle Royale Minecraft</h1>
+        </div>
+        <p id="warning">
+          <i data-lucide="construction" class="warning-icon"></i>
+          ( Site En Creation )
+        </p>
       </div>
-      <button class="header-btn" onclick="window.location.href='index.html'">
+      <div class="header-right">
+        <button class="header-btn" onclick="window.location.href='index.html'">
         <i data-lucide="arrow-left" class="btn-icon"></i>Retour au site
       </button>
+      </div>
     </div>
   </header>
 
@@ -62,14 +70,6 @@
             <li>Chargement...</li>
           </ul>
         </section>
-
-        <section class="br-section">
-          <h2><i data-lucide="server"></i> Infos serveur</h2>
-          <div id="server-info">
-            <!-- À remplir dynamiquement via /api/br/server -->
-            <p>Chargement...</p>
-          </div>
-        </section>
       </div>
       <div class="br-map-section">
         <section class="br-section">
@@ -79,11 +79,25 @@
           </div>
         </section>
       </div>
+      <section class="br-section server-info-full">
+        <h2><i data-lucide="server"></i> Infos serveur</h2>
+        <div id="server-info">
+          <!-- À remplir dynamiquement via /api/br/server -->
+          <p>Chargement...</p>
+        </div>
+      </section>
     </div>
   </main>
 
-  <footer>
-    <p>© 2025 LaTeamCocasse - Battle Royale Minecraft</p>
+  <footer class="bg-gray-800 text-center text-sm p-2">
+    <div class="footer-content">
+      <i data-lucide="code" class="footer-icon"></i>
+      © 2025 <a href="https://minilan.fr">Minilan</a> -
+      <a href="https://github.com/Minilan69/LTC-Website" target="_blank" class="footer-link">
+        <i data-lucide="github" class="footer-link-icon"></i>
+        Projet Open Source
+      </a>
+    </div>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -164,7 +178,7 @@
       map.fitBounds(bounds);
     });
   </script>
+  <script>lucide.createIcons();</script>
   <script src="data.js"></script>
 </body>
-
 </html>
