@@ -235,6 +235,7 @@ async function fetchNews() {
   if (!res.ok) return
 
   const data = await res.json()
+  console.log(data)
   const newsDiv = document.getElementById("server-info")
   newsDiv.innerHTML = ""
 
