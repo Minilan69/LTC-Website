@@ -8,6 +8,7 @@ const app = express()
 const db = require('./database')
 const { exec } = require('child_process');
 const { Client, GatewayIntentBits } = require('discord.js')
+const { parse } = require('discord-markdown-parser');
 
 // Get Discord OAuth info from env vars
 const CLIENT_ID = process.env.CLIENT_ID
@@ -242,13 +243,64 @@ discordClient.once('ready', () => {
   console.log(`Bot Discord connecté en tant que ${discordClient.user.tag}`)
 })
 
+// Route pour récupérer le nom d'un utilisateur ou d'un rôle Discord par ID
+app.get('/api/discord-name/:id', async (req, res) => {
+  const { id } = req.params;
+  const guildId = '1313197477674881135'; // Remplace par l'ID de ton serveur
+
+  try {
+    const guild = await discordClient.guilds.fetch(guildId);
+
+    // Cherche d'abord un membre (utilisateur)
+    try {
+      const member = await guild.members.fetch(id);
+      return res.json({ type: 'user', name: member.displayName });
+    } catch (e) {
+      // Pas un membre, on continue
+    }
+
+    // Cherche un rôle
+    try {
+      const role = await guild.roles.fetch(id);
+      if (role) return res.json({ type: 'role', name: role.name });
+    } catch (e) {
+      // Pas un rôle non plus
+    }
+
+    // Si rien trouvé
+    res.status(404).json({ error: 'Aucun utilisateur ou rôle trouvé pour cet ID' });
+  } catch (err) {
+    console.error('Erreur Discord API:', err); // <-- Ajoute ce log
+    res.status(500).json({ error: 'Erreur Discord API' });
+  }
+});
+
+app.post('/api/discord-markdown', express.json(), (req, res) => {
+  
+  const { text } = req.body;
+  try {
+    const ast = parse(text, 'normal');
+    res.json({ ast });
+  } catch (err) {
+    res.status(500).json({ error: 'Parsing error' });
+  }
+});
+
 app.get('/api/last-message', async (req, res) => {
   try {
     const channel = await discordClient.channels.fetch('1387487557322936370')
     const messages = await channel.messages.fetch({ limit: 1 })
     const last = messages.first() 
 
-    res.json(last ? last.content: 'Pas de news')
+    const data = {
+      content: last.content,
+      images: [...last.attachments.values()].map(a => a.url)
+    }
+
+    if (!data.content) {
+      data.content = ""
+    }
+    res.json(data)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Erreur lors de la récupération du message' })

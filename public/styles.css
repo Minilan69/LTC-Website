@@ -920,3 +920,88 @@ footer a:hover {
   padding-left: 1.5vw;     /* Comme .br-grid */
   padding-right: 1.5vw;
 }
+
+/* Ajoute à la fin de styles.css */
+.news-images {
+  display: flex;
+  gap: 6px;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.news-images img {
+  flex: 1 1 0;
+  width: 100%;
+  height: auto;
+  border-radius: 10px; 
+  margin: 0;
+  /* Optionnel : pour éviter les espaces blancs entre images */
+  object-fit: cover;
+}
+
+.news-images pre {
+  background: #23272a;
+  color: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.discord-quote {
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  font-size: 0.98em;
+  position: relative;
+  background: none;
+  border-left: none; /* Supprime l'ancien trait */
+}
+
+.discord-quote::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 3px;
+  background: #252525;
+}
+
+.mention {
+  color: #94a4e3; /* bleu Discord */
+  background-color: rgb(44,44,84);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+}
+
+.mention.user:hover {
+  background-color: rgba(0, 175, 244, 0.2);
+}
+
+.mention.role {
+  color: #ff7b00; /* orange rôles Discord */
+  background-color: rgba(255, 123, 0, 0.1);
+}
+
+.mention.role:hover {
+  background-color: rgba(255, 123, 0, 0.2);
+}
+
+.subtext {
+  font-size: 0.75rem;          /* Texte plus petit */
+  color: rgba(255, 255, 255, 0.6); /* Blanc semi-transparent comme Discord */
+  font-weight: 500;            /* Pas trop fin, ni gras */
+  line-height: 1.2;            /* Un peu plus serré */
+  letter-spacing: 0.02em;      /* Légère espace entre lettres */
+  user-select: none;           /* Optionnel : pas sélectionnable */
+}

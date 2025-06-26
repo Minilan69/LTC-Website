@@ -152,28 +152,124 @@ async function fetchGameStatus() {
 }
 
 // Actus
+async function getMentionHTML(part) {
+  try {
+    const res = await fetch(`/api/discord-name/${part.id}`);
+    if (!res.ok) throw new Error('Not found');
+    const data = await res.json();
+    if (part.type === 'user') {
+      return `<span class="mention">@${data.name}</span>`;
+    } else if (part.type === 'role') {
+      return `<span class="mention">@${data.name}</span>`;
+    }
+  } catch {
+    // fallback si pas trouvé ou erreur
+    if (part.type === 'user') return `<span class="mention">@User:${part.id}</span>`;
+    if (part.type === 'role') return `<span class="mention">@Role:${part.id}</span>`;
+    return '';
+  }
+}
+
+async function renderParsedToHTML(parsed) {
+  let html = "";
+
+  for (const part of parsed) {
+    switch (part.type) {
+      case 'text':
+        html += part.content;
+        break
+      case 'br':
+        html += '<br>';
+        break
+      case 'heading':
+        html += `<h${part.level}>${await renderParsedToHTML(part.content)}</h${part.level}>`
+        break
+      case 'strong':
+        html += `<strong>${await renderParsedToHTML(part.content)}</strong>`
+        break
+      case 'em':
+        html += `<em>${await renderParsedToHTML(part.content)}</em>`
+        break
+      case 'underline':
+        html += `<u>${await renderParsedToHTML(part.content)}</u>`
+        break
+      case 'strikethrough':
+        html += `<del>${await renderParsedToHTML(part.content)}</del>`
+        break
+      case 'blockquote':
+        html += `<blockquote class="discord-quote">${await renderParsedToHTML(part.content)}</blockquote>`
+        break
+      case 'spoiler':
+        html += `<span class="spoiler">${await renderParsedToHTML(part.content)}</span>`
+        break
+      case 'emoji':
+        const url = `https://cdn.discordapp.com/emojis/${part.id}.${part.animated ? 'gif' : 'png'}?size=16`
+        html += `<img class="emoji" src="${url}" alt="${part.name}" title="${part.name}" loading="lazy" />`
+        break
+      case 'twemoji':
+        html += part.name;
+      case 'user':
+      case 'role':
+        html += await getMentionHTML(part);
+        break
+      case 'url':
+        html += `<a href="${part.target}" target="_blank" rel="noopener noreferrer">${await renderParsedToHTML(part.content)}</a>`;
+        break
+      case 'subtext':
+        html += `<span class="subtext">${await renderParsedToHTML(part.content)}</span>`;
+        break
+
+      case 'channel':
+        html += `<span class="mention">#Channel:${part.id}</span>`;
+        break
+      default:
+        html += ''; // ignore ou ajoute un fallback si tu veux
+    }
+  }
+
+  return html;
+}
+
 async function fetchNews() {
-  const res = await fetch('/api/last-message');
-  if (!res.ok) return;
+  const res = await fetch('/api/last-message')
+  if (!res.ok) return
 
-  const data = await res.json();
+  const data = await res.json()
+  const newsDiv = document.getElementById("server-info")
+  newsDiv.innerHTML = ""
 
-  let content = data || "Aucune actu disponible";
+  // Appel backend qui renvoie AST discord-markdown-parser
+  const mdRes = await fetch('/api/discord-markdown', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: data.content }),
+  })
 
-  content = content
-    .replace(/\|\|(.+?)\|\|/g, '<span class="spoiler">$1</span>') // Spoiler
-    .replace(/<@!?(\d+)>/g, '@utilisateur') // Mentions (remplace par texte)
-    .replace(/<a?:\w+:\d+>/g, '') // Emojis custom Discord
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') // Gras Discord
-    .replace(/^-# (.*)$/gm, '<span class="little">$1</span>'); // Petit texte gris
+  if (!mdRes.ok) return
+  const mdData = await mdRes.json()
 
-  const newsDiv = document.getElementById("server-info");
+  let htmlContent = await renderParsedToHTML(mdData.ast || mdData.parsed || [])
+  
+  const images = data.images;
+  const chunkSize = 5;
 
-  newsDiv.innerHTML = "";
+  for (let i = 0; i < images.length; i += chunkSize) {
+    const chunk = images.slice(i, i + chunkSize);
+    const count = chunk.length;
+    htmlContent += `<div class="news-images">`
+    htmlContent += chunk.map(img => 
+      `<img src="${img}" alt="Image attachée" style="max-width: ${100 / count}%; width: ${100 / count}%" loading="lazy">`
+    ).join('');
+    htmlContent += `</div>`;
+  }
 
-  const div = document.createElement("div");
-  div.innerHTML = marked.parse(content);
-  newsDiv.appendChild(div);
+
+
+  const div = document.createElement("div")
+  div.classList.add("news-content")
+  div.innerHTML = htmlContent
+
+  newsDiv.appendChild(div)
 }
 
 
