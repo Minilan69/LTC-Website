@@ -1,3 +1,5 @@
+console.log("Data script loaded");
+
 // UUID pour les icônes
 async function getUUIDFromName(name) {
   const res = await fetch(`/api/mojang-uuid/${name}`);
@@ -231,6 +233,7 @@ async function renderParsedToHTML(parsed) {
 }
 
 async function fetchNews() {
+  console.log("Fetching news...");
   const res = await fetch('/api/last-message')
   if (!res.ok) return
 
